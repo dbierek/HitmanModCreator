@@ -1,79 +1,75 @@
 package com.dannybierek.tools.hmc
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import com.dannybierek.tools.hmc.config.GenerateMissionProperties
+import com.dannybierek.tools.hmc.ui.UiButton
+import com.dannybierek.tools.hmc.ui.Canvas2D
+import com.dannybierek.tools.hmc.ui.DrawEntity
+import com.dannybierek.tools.hmc.ui.DropDownList
+import com.dannybierek.tools.hmc.ui.HeaderText
+import com.dannybierek.tools.hmc.ui.Image
+import com.dannybierek.tools.hmc.ui.UiElement
+import java.awt.SystemColor.text
 
 
 @Composable
 @Preview
 fun App() {
-
-    val list = listOf(
-        UI.HEADER_TEXT,
-        UI.OPEN_MISSION_BUTTON,
-        UI.DROPDOWN,
-        UI.MISSION_THUMBNAIL,
-        UI.THUMBNAIL_DROPDOWN,
-        UI.CREATE_MISSION_BUTTON,
-        "Open a mission by clicking the Open Mission button.",
-        "Then click the Create Mod button."
-    )
-    val primaryColor = 0xff5abbe2
-    val secondaryColor = 0xff3f8c5a
+    val drawEntities = mutableListOf<DrawEntity>()
+    var statusText: String = ""
+    val primaryColor = Color(0xff5abbe2)
+    val secondaryColor = Color(0xff3f8c5a)
     val imageModifier = Modifier
         .height(240.dp)
-        .fillMaxWidth()
+        .fillMaxWidth(0.5F)
         .clip(
             RoundedCornerShape(12.dp)
         )
-
-
+//        UI.THUMBNAIL_DROPDOWN,
     LazyColumn(modifier = Modifier.fillMaxHeight()) {
-        items(items = list, itemContent = { item ->
-            when (item) {
-                UI.HEADER_TEXT -> {
-                    Text(text = (item as UI).text, style = TextStyle(fontSize = 20.sp))
+        items(items = listOf(
+            HeaderText("Hitman Mod Creator"),
+            HeaderText("Open a mission by clicking the Open Mission button."),
+            HeaderText("Then click the Create Mod button."),
+            HeaderText("Status: $statusText"),
+            UiButton("Load Mission", primaryColor, secondaryColor) { statusText = "Loading Mission" },
+            DropDownList(listOf("A", "B"), primaryColor, secondaryColor),
+            Image("images/newyork.jpg", imageModifier),
+            UiButton("Create Mission", clickHandler = {
+                GenerateMissionApplication().startApplication(arrayOf(), GenerateMissionProperties(drawEntities.map { it.entity }
+                    .toMutableList())
+                ) {
+                    statusText = "Position of entity: [$it]"
                 }
+            })
+        ), itemContent = { item -> item.renderer() })
+    }
 
-                UI.CREATE_MISSION_BUTTON -> {
-                    var text by remember { mutableStateOf("Create Mission") }
-                    MaterialTheme(
-                        lightColors().copy(
-                            primary = Color(primaryColor),
-                            secondary = Color(secondaryColor)
-                        )
-                    ) {
-                        StartGenerateMissionApplication()
+    Canvas2D(drawEntities)
 
-                        Button(onClick = {
-                            text = "Mission Created"
+}
 
-                        }) {
-                            Text(text)
-                        }
-                    }
-                }
+fun main() = application {
+    Window(onCloseRequest = ::exitApplication) {
+        App()
+    }
+}
 
-                UI.OPEN_MISSION_BUTTON -> {
+/*
+ UI.OPEN_MISSION_BUTTON -> {
                     var text by remember { mutableStateOf("Open Mission") }
                     MaterialTheme(
                         lightColors().copy(
@@ -87,40 +83,10 @@ fun App() {
                     }
                 }
 
-                UI.DROPDOWN -> {
-                    var expanded by remember { mutableStateOf(false) }
-                    val items = listOf("TEMP", "AIRG", "TBLU", "PRIM", "ASET", "BORG")
-                    val disabledValue = "BORG"
-                    var selectedIndex by remember { mutableStateOf(0) }
-                    Box(modifier = Modifier.fillMaxSize(.5F).wrapContentSize(Alignment.TopStart)) {
-                        Text(
-                            items[selectedIndex],
-                            modifier = Modifier.fillMaxWidth().clickable(onClick = { expanded = true }).background(
-                                Color(primaryColor)
-                            )
-                        )
-                        DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false },
-                            modifier = Modifier.fillMaxWidth().background(
-                                Color(secondaryColor)
-                            )
-                        ) {
-                            items.forEachIndexed { index, s ->
-                                DropdownMenuItem(onClick = {
-                                    selectedIndex = index
-                                    expanded = false
-                                }) {
-                                    val disabledText = if (s == disabledValue) {
-                                        " (Disabled)"
-                                    } else {
-                                        ""
-                                    }
-                                    Text(text = s + disabledText)
-                                }
-                            }
-                        }
-                    }
+                UI.DROPDOWN ->
+
+                UI.MISSION_THUMBNAIL -> {
+
                 }
 
 //                UI.THUMBNAIL_DROPDOWN -> {
@@ -159,16 +125,6 @@ fun App() {
 //                    }
 //                }
 
-                UI.MISSION_THUMBNAIL -> {
-                    val fileName = "images/newyork.jpg"
-                    Image(
-                        painter = painterResource(fileName),
-                        contentDescription = "image",
-                        imageModifier,
-                        contentScale = ContentScale.Fit
-                    )
-                }
-
                 else -> {
                     var text: String
                     if (item is String) {
@@ -179,13 +135,4 @@ fun App() {
                     Text(text = text, style = TextStyle(fontSize = 20.sp))
                 }
             }
-        })
-    }
-    Canvas2D()
-
-}
-fun main() = application {
-    Window(onCloseRequest = ::exitApplication) {
-        App()
-    }
-}
+ */

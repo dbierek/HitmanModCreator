@@ -1,9 +1,8 @@
-package com.dannybierek.tools.hmc
+package com.dannybierek.tools.hmc.ui
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.onDrag
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -11,7 +10,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.input.pointer.PointerButton
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
@@ -21,34 +19,38 @@ import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.dannybierek.tools.hmc.model.Entity
 
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class, ExperimentalTextApi::class)
 @Composable
-fun Canvas2D() {
+fun Canvas2D(drawEntities: MutableList<DrawEntity>) {
 
     val textMeasure = rememberTextMeasurer()
-    val entity = DrawEntity(
-        50F, 50F, fun(drawScope: DrawScope, entity: DrawEntity) {
-            drawScope.drawCircle(
-                entity.color, center = Offset(
-                    entity.x, entity.y
-                ), radius = 40f
+    for (i in 1..3) {
+        drawEntities.add(
+            DrawEntity(
+                entity = Entity(),
+                50F,
+                50F,
+                name = "DrawEntity $i"
             )
-        }
-    )
+        )
+    }
     var mousePosText by remember { mutableStateOf("Mouse: ") }
     var displayText by remember { mutableStateOf("Not Dragging: ") }
     var mousePos = Offset(0F, 0F)
     Canvas(
         modifier = Modifier
-            .offset(250.dp, 250.dp)
+            .offset(400.dp, 250.dp)
             .fillMaxSize(0.5F)
             .onPointerEvent(PointerEventType.Move) {
                 mousePos = it.changes.first().position
                 mousePosText = "Mouse: $mousePos"
-                if (entity.active) {
-                    entity.color = Color.Green
+                for (drawEntity in drawEntities) {
+                    if (drawEntity.active) {
+                        drawEntity.color = Color.Green
+                    }
                 }
 
             }.onDrag(
@@ -56,15 +58,21 @@ fun Canvas2D() {
                 matcher = PointerMatcher.mouse(PointerButton.Primary),
                 onDrag = {
                     displayText = "Mouse Dragging Coords: ${mousePos.x}, ${mousePos.y}"
-                    entity.x = mousePos.x
-                    entity.y = mousePos.y
+                    for (drawEntity in drawEntities) {
+                        drawEntity.x = mousePos.x
+                        drawEntity.y = mousePos.y
+                    }
                 },
                 onDragStart = {
-                    entity.color = Color.Blue
+                    for (drawEntity in drawEntities) {
+                        drawEntity.color = Color.Blue
+                    }
                     displayText = "Mouse Drag Start"
                 },
                 onDragEnd = {
-                    entity.color = Color.Red
+                    for (drawEntity in drawEntities) {
+                        drawEntity.color = Color.Red
+                    }
                     displayText = "Mouse Drag End"
                 })
             .combinedClickable(
@@ -82,7 +90,9 @@ fun Canvas2D() {
 //            .onPointerEvent(PointerEventType.Exit) { entity.active = false },
     ) {
         drawRect(Color.DarkGray, topLeft = Offset(0f, 0f), size = Size(this.size.width, this.size.height))
-        entity.drawHandler(this, entity)
+        for (drawEntity in drawEntities) {
+            drawEntity.drawHandler(this, drawEntity)
+        }
 //        drawCircle(Color.Red, center = Offset(50f, 200f), radius = 40f)
 //        drawLine(
 //            Color.Green, Offset(20f, 0f),

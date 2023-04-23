@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor
 @NoArgsConstructor
 data class QuickEntity(
     val comments: List<Any>? = null,
-    val entities: Map<String?, Entity>? = null,
+    val entities: MutableMap<String?, Entity> = mutableMapOf(),
     val externalScenes: List<Any>? = null,
     val extraBlueprintDependencies: List<Any>? = null,
     val extraFactoryDependencies: List<Any>? = null,

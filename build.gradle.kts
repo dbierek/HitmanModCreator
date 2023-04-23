@@ -17,10 +17,11 @@ repositories {
 
 dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.0-Beta")
-    implementation("io.klogging:klogging-jvm:0.4.13")
+    implementation("io.github.microutils", "kotlin-logging", "2.0.10")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.2")
-    compileOnly("org.projectlombok:lombok:1.18.22")
-    annotationProcessor("org.projectlombok:lombok:1.18.22")
+    implementation("org.slf4j", "slf4j-log4j12", "1.7.29")
+    compileOnly("org.projectlombok:lombok:1.18.26")
+    annotationProcessor("org.projectlombok:lombok:1.18.26")
     testImplementation(kotlin("test"))
 
     implementation(compose.desktop.currentOs)

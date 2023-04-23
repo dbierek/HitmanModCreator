@@ -15,11 +15,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.sp
-import com.dannybierek.tools.hmc.factories.FileFactory.Companion.logger
+import com.dannybierek.tools.hmc.config.GenerateMissionProperties
 import kotlinx.coroutines.launch
 
 @Composable
-fun StartGenerateMissionApplication() {
+fun StartGenerateMissionApplication(properties: GenerateMissionProperties) {
     var backgroundColor = Color.DarkGray
     Box(
         modifier = Modifier
@@ -41,7 +41,7 @@ fun StartGenerateMissionApplication() {
 
     val getGenerateMissionApplicationOnClick: () -> Unit = {
         coroutineScope.launch {
-            generateMissionApplication = GenerateMissionApplication().startApplication(arrayOf()) {
+            generateMissionApplication = GenerateMissionApplication().startApplication(arrayOf(), properties) {
                 text = "Position of entity: [" + generateMissionApplication?.entityPosition.toString() + "]"
             }
         }

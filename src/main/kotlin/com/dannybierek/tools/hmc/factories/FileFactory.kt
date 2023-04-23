@@ -7,19 +7,15 @@ import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import io.klogging.Klogging
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import mu.KLogging
 import java.io.File
 
 
 class FileFactory {
-    suspend fun createFile(fileName: String, fileType: FileType): File {
+    fun createFile(fileName: String, fileType: FileType): File {
         val file = File(fileName)
         logger.info { "Attempting to create file: $fileName of type $fileType" }
-        val success: Boolean = withContext(Dispatchers.IO) {
-            file.createNewFile()
-        }
+        val success: Boolean = file.createNewFile()
 
         if (success) {
             logger.info { "$fileName created successfully." }
@@ -32,7 +28,7 @@ class FileFactory {
         }
         return file
     }
-    suspend fun jsonFileToQuickEntity(filename: String): QuickEntity {
+    fun jsonFileToQuickEntity(filename: String): QuickEntity {
         val mapper = jacksonObjectMapper().registerModule(
             KotlinModule(nullToEmptyMap = true)
         )
@@ -53,12 +49,10 @@ class FileFactory {
         logger.info { quickEntity }
         return quickEntity ?: QuickEntity()
     }
-    suspend fun editFile(fileName: String, fileType: FileType) {
+    fun editFile(fileName: String, fileType: FileType) {
         val file = File(fileName)
         logger.info { "Attempting to create file: $fileName of type $fileType" }
-        val success: Boolean = withContext(Dispatchers.IO) {
-            file.createNewFile()
-        }
+        val success: Boolean = file.createNewFile()
 
         if (success) {
             logger.info { "$fileName created successfully." }
@@ -66,5 +60,5 @@ class FileFactory {
             logger.info { "$fileName already exists." }
         }
     }
-    companion object : Klogging
+    companion object : KLogging()
 }

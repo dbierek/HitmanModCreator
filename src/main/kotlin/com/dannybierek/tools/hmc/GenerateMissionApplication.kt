@@ -1,20 +1,20 @@
 package com.dannybierek.tools.hmc
 
+import com.dannybierek.tools.hmc.config.GenerateMissionProperties
 import com.dannybierek.tools.hmc.factories.FileFactory
+import com.dannybierek.tools.hmc.model.Entity
 import com.dannybierek.tools.hmc.model.QuickEntity
+import com.dannybierek.tools.hmc.model.Vector3d
 import com.fasterxml.jackson.databind.ObjectMapper
-import io.klogging.Klogging
-import io.klogging.Level
-import io.klogging.config.DEFAULT_CONSOLE
-import io.klogging.config.loggingConfiguration
+import mu.KLogging
 import java.io.File
 import java.io.IOException
 
 class GenerateMissionApplication {
     var filename: String = ""
-    var entityPosition:  Map<String, Any>? = mapOf()
+    var entityPosition: Vector3d = Vector3d()
 
-    suspend fun startApplication(args: Array<String>, runUICallback: () -> Unit): GenerateMissionApplication {
+    fun startApplication(args: Array<String>, properties: GenerateMissionProperties, runUICallback: (data: Vector3d) -> Unit): GenerateMissionApplication {
         configureKlogging()
         logger.info { "Starting com.dannybierek.tools.hmc.GenerateMissionApplication with args:" }
         for (arg in args) {
@@ -27,23 +27,29 @@ class GenerateMissionApplication {
         logger.info { "Filename: $filename" }
         val ff = FileFactory()
         val quickEntity: QuickEntity = ff.jsonFileToQuickEntity(filename)
-        val npcsEntity = quickEntity.entities?.get(NPCS_HASH)
+        val npcsEntity = quickEntity.entities[NPCS_HASH]
         logger.info { "NPCs Entity: " }
         logger.info { npcsEntity }
-        val thomasCrossEntity = quickEntity.entities?.get(TC_HASH)
-        var transform = thomasCrossEntity?.properties?.m_mTransform?.value
-        var position = transform?.get("position")
-        val thomasCrossEntity2 = thomasCrossEntity?.copy()
-        var transform2 = thomasCrossEntity?.properties?.m_mTransform?.value
-        transform2?.set("position", mapOf(Pair("x", 1), Pair("y", 2), Pair("z", 3)))
-        var position2 = transform2?.get("position")
+        val thomasCrossEntity = quickEntity.entities[TC_HASH] ?: Entity()
+        if (!quickEntity.entities.contains(TC_HASH)) {
+            logger.error { "Thomas Cross entity not found. Creating new Entity" }
+        }
+
+        var thomasCrossTransform = thomasCrossEntity.properties.m_mTransform
+        val uiEntity0 = properties.entities[0]
+        entityPosition = uiEntity0.properties.m_mTransform.getPosition()
         logger.info { "thomasCrossEntity: " }
         logger.info { thomasCrossEntity }
         logger.info { "thomasCrossEntity Position " }
-        logger.info {position}
-        logger.info { "thomasCrossEntity2 Position " }
-        logger.info {position2}
-        entityPosition = position
+        logger.info { thomasCrossTransform.getPosition() }
+        logger.info { "uiEntity0: " }
+        logger.info { uiEntity0 }
+        logger.info { "uiEntity0 Position " }
+        thomasCrossTransform.setPosition(entityPosition)
+        logger.info { entityPosition}
+        logger.info { "thomasCrossEntity: " }
+        logger.info { thomasCrossEntity }
+        logger.info { "thomasCrossEntity Position " }
         val path = "src/main/resources/scenes/scene_output.entity.json"
         try {
             val mapper = ObjectMapper()
@@ -51,9 +57,6 @@ class GenerateMissionApplication {
         } catch (e: IOException) {
             e.printStackTrace()
         }
-        logger.info { "Running UI Callback "}
-        runUICallback()
-        logger.info { "Finished running UI Callback "}
     return this
 
 //        val file = ff.createFile(filename, FileType.TEMP)
@@ -61,13 +64,13 @@ class GenerateMissionApplication {
     }
 
     private fun configureKlogging() {
-        loggingConfiguration {
-            DEFAULT_CONSOLE()
-            minDirectLogLevel(Level.INFO)
-        }
+//        loggingConfiguration {
+//            DEFAULT_CONSOLE()
+//            minDirectLogLevel(Level.INFO)
+//        }
     }
 
-    companion object : Klogging {
+    companion object : KLogging() {
         const val NPCS_HASH: String = "abcde92f2c09c134"
         const val TC_HASH: String = "feed93e54821f99f"
     }
