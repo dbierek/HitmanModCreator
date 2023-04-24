@@ -7,6 +7,7 @@ import com.dannybierek.tools.hmc.model.QuickEntity
 import com.dannybierek.tools.hmc.model.Vector3d
 import com.fasterxml.jackson.databind.ObjectMapper
 import mu.KLogging
+import org.apache.log4j.BasicConfigurator
 import java.io.File
 import java.io.IOException
 
@@ -15,7 +16,7 @@ class GenerateMissionApplication {
     var entityPosition: Vector3d = Vector3d()
 
     fun startApplication(args: Array<String>, properties: GenerateMissionProperties, runUICallback: (data: Vector3d) -> Unit): GenerateMissionApplication {
-        configureKlogging()
+        configureLogging()
         logger.info { "Starting com.dannybierek.tools.hmc.GenerateMissionApplication with args:" }
         for (arg in args) {
             logger.info { arg }
@@ -63,7 +64,9 @@ class GenerateMissionApplication {
 //        file.writeText(ObjectMapper.)
     }
 
-    private fun configureKlogging() {
+    private fun configureLogging() {
+        BasicConfigurator.configure();
+
 //        loggingConfiguration {
 //            DEFAULT_CONSOLE()
 //            minDirectLogLevel(Level.INFO)
