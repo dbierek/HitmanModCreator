@@ -13,6 +13,8 @@ data class Entity(
     val outputCopying: Map<String, Map<String, Any>>? = null,
     val subsets: Map<String, List<String>>? = null,
     val name: String? = null,
-    val parent: Any? = null,
+    val parent: String? = "",
     val template: String? = null
-)
+) {
+    fun getChildren(entityId: String, scene: QuickEntity) = scene.entities.filter { it.value.parent == entityId }
+}

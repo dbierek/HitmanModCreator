@@ -4,6 +4,7 @@ import com.dannybierek.tools.hmc.model.FileType
 import com.dannybierek.tools.hmc.model.QuickEntity
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.JsonMappingException
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -29,26 +30,23 @@ class FileFactory {
         return file
     }
     fun jsonFileToQuickEntity(filename: String): QuickEntity {
-        val mapper = jacksonObjectMapper().registerModule(
-            KotlinModule(nullToEmptyMap = true)
-        )
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
-        logger.info { "filename passed in: $filename" }
-//        logger.info { "filename to load: \"src/main/resources/sceneTemplate.entity.json\"" }
-        val filename2: String = "src/main/resources/scenes/scene_debug.entity.json"
-        logger.info { "filename to load: $filename2" }
-
-        var quickEntity: QuickEntity? = null
-        try {
-            quickEntity = mapper.readValue(File(filename2))
+        logger.info { "Loading file: $filename" }
+        return try {
+            val quickEntity: QuickEntity = getJsonMapper().readValue(File(filename))
+            logger.info { quickEntity }
+            quickEntity
         } catch (e: JsonMappingException) {
             logger.info {"Issue in deserializing: $e" }
+            QuickEntity()
         }
-
-        logger.info { quickEntity }
-        return quickEntity ?: QuickEntity()
     }
+
+    private fun getJsonMapper(): ObjectMapper {
+        var mapper1 = jacksonObjectMapper().registerModule(KotlinModule(nullToEmptyMap = true))
+        mapper1.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        return mapper1
+    }
+
     fun editFile(fileName: String, fileType: FileType) {
         val file = File(fileName)
         logger.info { "Attempting to create file: $fileName of type $fileType" }
