@@ -22,11 +22,11 @@ data class DrawEntity(
 ) {
     fun setEntityX(value: Float) {
         x = value
-        entity.properties.m_mTransform.setX(value)
+        entity.properties?.m_mTransform?.setX(value)
     }
     fun setEntityY(value: Float) {
         y = value
-        entity.properties.m_mTransform.setY(value)
+        entity.properties?.m_mTransform?.setY(value)
     }
 
     var active: Boolean = false

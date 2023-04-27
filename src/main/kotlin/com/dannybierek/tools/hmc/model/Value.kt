@@ -1,6 +1,6 @@
 package com.dannybierek.tools.hmc.model
 
 data class Value(
-    val position: Position,
-    val rotation: Rotation
+    var position: Vector3d = Vector3d(),
+    var rotation: Vector3d = Vector3d()
 )

@@ -6,18 +6,18 @@ import lombok.NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 @NoArgsConstructor
 data class QuickEntity(
-    val comments: List<Any>? = null,
-    val entities: MutableMap<String?, Entity> = mutableMapOf(),
-    val externalScenes: List<Any>? = null,
-    val extraBlueprintDependencies: List<Any>? = null,
-    val extraFactoryDependencies: List<Any>? = null,
-    val overrideDeletes: List<Any>? = null,
-    val pinConnectionOverrideDeletes: List<Any>? = null,
-    val pinConnectionOverrides: List<Any>? = null,
-    val propertyOverrides: List<Any>? = null,
-    val quickEntityVersion: Int? = null,
-    val rootEntity: String? = null,
-    val subType: String? = null,
-    val tbluHash: String? = null,
-    val tempHash: String? = null
+    val tempHash: String = "",
+    val tbluHash: String = "",
+    val rootEntity: String = "",
+    val entities: MutableMap<String, Entity> = mutableMapOf(),
+    val propertyOverrides: List<Any> = listOf(),
+    val overrideDeletes: List<Any> = listOf(),
+    val pinConnectionOverrides: List<Any> = listOf(),
+    val pinConnectionOverrideDeletes: List<Any> = listOf(),
+    val externalScenes: List<String> = listOf(),
+    val subType: String? = SubType.scene.toString(),
+    val quickEntityVersion: Double = 3.1,
+    val extraFactoryDependencies: List<Any> = listOf(),
+    val extraBlueprintDependencies: List<Any> = listOf(),
+    val comments: List<String>? = listOf()
 )

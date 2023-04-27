@@ -2,33 +2,35 @@ package com.dannybierek.tools.hmc
 
 import com.dannybierek.tools.hmc.config.GenerateMissionProperties
 import com.dannybierek.tools.hmc.factories.FileFactory
-import com.dannybierek.tools.hmc.factories.FileFactory.Companion.logger
+import com.dannybierek.tools.hmc.mappers.JsonMapper
 import com.dannybierek.tools.hmc.model.CharImplementation
 import com.dannybierek.tools.hmc.model.Entity
 import com.dannybierek.tools.hmc.model.Outfit
 import com.dannybierek.tools.hmc.model.QuickEntity
 import com.dannybierek.tools.hmc.model.Vector3d
 import com.dannybierek.tools.hmc.ui.HeaderText
-import com.fasterxml.jackson.databind.ObjectMapper
 import mu.KLogging
 import org.apache.log4j.BasicConfigurator
-import java.io.File
 import java.io.IOException
 import kotlin.math.floor
 import kotlin.math.sqrt
 
 class GenerateMissionApplication {
-    var runUICallback: (data: Vector3d) -> Unit = {}
-    var filenameArgument: String = ""
-    var entityPosition: Vector3d = Vector3d()
-    var quickEntity: QuickEntity = QuickEntity()
-    var outputSceneFile =  "src/main/resources/scenes/scene_output.entity.json"
+    private var runUICallback: (data: Vector3d) -> Unit = {}
+    private var filenameArgument: String = ""
+    private var entityPosition: Vector3d = Vector3d()
+    private var quickEntity: QuickEntity = QuickEntity()
+    private var outputSceneFile = "src/main/resources/scenes/scene_output.entity.json"
     var properties: GenerateMissionProperties = GenerateMissionProperties(
-        sceneFile =  "src/main/resources/scenes/scene_output.entity.json",
-        statusTextElement = HeaderText()
+        sceneFile = "src/main/resources/scenes/scene_output.entity.json", statusTextElement = HeaderText()
     )
+    private val jsonMapper = JsonMapper().mapper
+    private val ff = FileFactory(jsonMapper)
     var args: Array<String> = arrayOf()
-    fun startApplication(args: Array<String>, properties: GenerateMissionProperties, runUICallback: (data: Vector3d) -> Unit): GenerateMissionApplication {
+
+    fun startApplication(
+        args: Array<String>, properties: GenerateMissionProperties, runUICallback: (data: Vector3d) -> Unit
+    ): GenerateMissionApplication {
         configureLogging()
         properties.statusTextElement.text = "Hello from GenerateMissionApplication"
         this.args = args
@@ -40,32 +42,30 @@ class GenerateMissionApplication {
         showNpcOutfitsAndPositions()
 //        moveThomasCross()
         saveToFile(outputSceneFile)
-    return this
-
-//        val file = ff.createFile(filename, FileType.TEMP)
-//        file.writeText(ObjectMapper.)
+        return this
     }
 
     private fun showNpcOutfitsAndPositions() {
+        var outfitNumber: MutableList<Int> = mutableListOf(0)
         logger.info {
             getEntity(OUTFITS_HASH)?.getChildren(OUTFITS_HASH, quickEntity)?.map {
-                "Outfit: ${it.value.factory}\tPosition: ${it.value.properties.m_mTransform.getPosition()}\n"
+                outfitNumber[0] += 1
+                "Outfit number: ${outfitNumber[0]} Outfit: ${it.value.factory}\tPosition: ${it.value.properties?.m_mTransform?.value?.position}\n"
             }
         }
     }
 
     private fun saveToFile(path: String) {
-        logger.info { "Saving to file: $path"}
+        logger.info { "Saving to file: $path" }
         try {
-            val mapper = ObjectMapper()
-            mapper.writeValue(File(path), quickEntity)
+            ff.saveQuickEntityJson(path, quickEntity)
         } catch (e: IOException) {
             e.printStackTrace()
         }
     }
 
     private fun moveThomasCross() {
-        logger.info { "Moving Thomas Cross:"}
+        logger.info { "Moving Thomas Cross:" }
 
         val npcsEntity = getEntity(NPCS_HASH)
         logger.info { "NPCs Entity: " }
@@ -75,32 +75,31 @@ class GenerateMissionApplication {
             logger.error { "Thomas Cross entity not found. Creating new Entity" }
         }
 
-        var thomasCrossTransform = thomasCrossEntity.properties.m_mTransform
+        var thomasCrossTransform = thomasCrossEntity.properties?.m_mTransform
         val uiEntity0 = properties.drawEntities[0]
-        entityPosition = uiEntity0.properties.m_mTransform.getPosition()
+        entityPosition = uiEntity0.properties?.m_mTransform?.value?.position ?: Vector3d()
         logger.info { "thomasCrossEntity Before: " }
         logger.info { thomasCrossEntity }
         logger.info { "thomasCrossEntity Before Position " }
-        logger.info { thomasCrossTransform.getPosition() }
+        logger.info { thomasCrossTransform?.value?.position }
         logger.info { "uiEntity0: " }
         logger.info { uiEntity0 }
         logger.info { "uiEntity0 Position " }
-        thomasCrossTransform.setPosition(entityPosition)
-        logger.info { entityPosition}
+        thomasCrossTransform?.value?.position = entityPosition
+        logger.info { entityPosition }
         logger.info { "thomasCrossEntity After: " }
         logger.info { thomasCrossEntity }
         logger.info { "thomasCrossEntity After Position " }
     }
 
     private fun getEntity(hash: String): Entity? {
-        logger.info { "Getting entity: $hash"}
+        logger.info { "Getting entity: $hash" }
         return quickEntity.entities[hash]
     }
 
     private fun loadQuickEntity(): QuickEntity {
         logger.info { "Loading QuickEntity from filename: ${properties.sceneFile}" }
-        val ff = FileFactory()
-        return ff.jsonFileToQuickEntity(properties.sceneFile)
+        return ff.loadJsonQuickEntity(properties.sceneFile)
     }
 
     private fun handleArguments(args: Array<String>) {
@@ -110,7 +109,7 @@ class GenerateMissionApplication {
             logger.info { arg }
 
             if (arg.take(10) == "-file=" || arg.take(3) == "-f=") {
-                filenameArgument= arg.substring(10)
+                filenameArgument = arg.substring(10)
             }
         }
     }
